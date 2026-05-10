@@ -138,4 +138,4 @@ async def fallback(message: Message, session: Session, platform: Platform) -> No
         await platform.send_message(message.chat_id, "No AI API key set. Use /setkey to configure one.")
         return
     response = await agent_chat(message.chat_id, message.text, session.ai_api_key, session.ai_model)
-    await platform.send_message(message.chat_id, response)
+    await platform.send_message(message.chat_id, response, html=True)
