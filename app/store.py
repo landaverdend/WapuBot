@@ -38,31 +38,37 @@ class SessionStore:
 
         if self._pool:
             row = await self._pool.fetchrow(
-                "SELECT email, api_key_encrypted FROM sessions WHERE chat_id = $1",
+                "SELECT email, wapu_api_key_encrypted, ai_api_key_encrypted FROM sessions WHERE chat_id = $1",
                 chat_id,
             )
             if row:
                 session.complete_auth(
                     email=row["email"],
-                    api_key=_decrypt(row["api_key_encrypted"]),
+                    wapu_api_key=_decrypt(row["wapu_api_key_encrypted"]),
                 )
+                if row["ai_api_key_encrypted"]:
+                    session.ai_api_key = _decrypt(row["ai_api_key_encrypted"])
+                session.dirty = False
 
         self._cache[chat_id] = session
         return session
 
     async def save(self, session: Session) -> None:
-        if not self._pool or not session.is_authenticated:
+        if not self._pool or not session.dirty:
             return
         await self._pool.execute(
             """
-            INSERT INTO sessions (chat_id, email, api_key_encrypted, updated_at)
-            VALUES ($1, $2, $3, NOW())
+            INSERT INTO sessions (chat_id, email, wapu_api_key_encrypted, ai_api_key_encrypted, updated_at)
+            VALUES ($1, $2, $3, $4, NOW())
             ON CONFLICT (chat_id) DO UPDATE SET
                 email = EXCLUDED.email,
-                api_key_encrypted = EXCLUDED.api_key_encrypted,
+                wapu_api_key_encrypted = EXCLUDED.wapu_api_key_encrypted,
+                ai_api_key_encrypted = EXCLUDED.ai_api_key_encrypted,
                 updated_at = NOW()
             """,
             session.chat_id,
             session.email,
-            _encrypt(session.api_key),
+            _encrypt(session.wapu_api_key),
+            _encrypt(session.ai_api_key) if session.ai_api_key else None,
         )
+        session.dirty = False

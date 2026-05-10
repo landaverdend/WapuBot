@@ -13,15 +13,24 @@ Handler = Callable[["Message", "Session", "Platform"], Awaitable[None]]
 class Router:
     def __init__(self) -> None:
         self._commands: dict[str, Handler] = {}
+        self._descriptions: dict[str, str] = {}
         self._state_handlers: dict[str, Handler] = {}
         self._fallback: Handler | None = None
 
-    def command(self, *names: str) -> Callable:
+    def command(self, *names: str, description: str = "") -> Callable:
         def decorator(fn: Handler) -> Handler:
             for name in names:
                 self._commands[name] = fn
+                if description:
+                    self._descriptions[name] = description
             return fn
         return decorator
+
+    def help_text(self) -> str:
+        return "\n".join(
+            f"{name} — {desc}"
+            for name, desc in self._descriptions.items()
+        )
 
     def on_state(self, state: str) -> Callable:
         def decorator(fn: Handler) -> Handler:
