@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 IDLE = "idle"
 AWAITING_EMAIL = "awaiting_email"
@@ -29,13 +29,3 @@ class Session:
         self.email = email
         self.email_msg_id = None
         self.api_key = api_key
-
-
-class SessionStore:
-    def __init__(self) -> None:
-        self._sessions: dict[int, Session] = {}
-
-    def get(self, chat_id: int) -> Session:
-        if chat_id not in self._sessions:
-            self._sessions[chat_id] = Session(chat_id=chat_id)
-        return self._sessions[chat_id]

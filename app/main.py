@@ -1,18 +1,26 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 from dotenv import load_dotenv
 import os
 
 from .models import Message
-from .session import SessionStore
+from .store import SessionStore
 from .platform import TelegramPlatform
 from .handlers import router
 
 load_dotenv()
 
-app = FastAPI()
 sessions = SessionStore()
 platform = TelegramPlatform(token=os.environ["TELEGRAM_BOT_TOKEN"])
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await sessions.init(os.environ["DATABASE_URL"])
+    yield
+    await sessions.close()
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/health")
@@ -37,7 +45,8 @@ async def webhook(request: Request):
         return {"ok": True}
 
     message = Message(chat_id=chat_id, text=text, message_id=msg_id)
-    session = sessions.get(chat_id)
+    session = await sessions.get(chat_id)
     await router.dispatch(message, session, platform)
+    await sessions.save(session)
 
     return {"ok": True}
