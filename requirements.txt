@@ -2,3 +2,4 @@ fastapi>=0.111,<0.112
 uvicorn[standard]>=0.29,<0.30
 python-telegram-bot>=21.0,<22
 python-dotenv>=1.0,<2
+wapu>=0.4.0,<0.5
