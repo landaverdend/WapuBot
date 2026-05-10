@@ -4,7 +4,7 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.models.lite_llm import LiteLlm
 from google.genai import types
 
-from .tools import hello_world
+from .tools import build_tools
 
 APP_NAME = "wapu_bot"
 
@@ -15,15 +15,13 @@ SYSTEM_PROMPT = (
 
 session_service = InMemorySessionService()
 
-TOOLS = [hello_world]
 
-
-async def chat(chat_id: int, text: str, api_key: str, model: str) -> str:
+async def chat(chat_id: int, text: str, ai_api_key: str, wapu_api_key: str, model: str) -> str:
     agent = Agent(
-        model=LiteLlm(model=model, api_key=api_key),
+        model=LiteLlm(model=model, api_key=ai_api_key),
         name=APP_NAME,
         instruction=SYSTEM_PROMPT,
-        tools=TOOLS,
+        tools=build_tools(wapu_api_key),
     )
     runner = Runner(agent=agent, app_name=APP_NAME, session_service=session_service)
 
