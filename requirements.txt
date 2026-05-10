@@ -7,3 +7,5 @@ asyncpg>=0.29,<0.30
 cryptography>=42
 yoyo-migrations>=8.2,<9
 psycopg2-binary>=2.9,<3
+google-adk>=1.13.0
+litellm>=1.82.0

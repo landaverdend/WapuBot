@@ -5,6 +5,7 @@ IDLE = "idle"
 AWAITING_EMAIL = "awaiting_email"
 AWAITING_PASSWORD = "awaiting_password"
 AWAITING_AI_KEY = "awaiting_ai_key"
+AWAITING_MODEL = "awaiting_model"
 AUTHENTICATED = "authenticated"
 
 
@@ -16,6 +17,7 @@ class Session:
     email_msg_id: int | None = None
     wapu_api_key: str | None = None
     ai_api_key: str | None = None
+    ai_model: str = "anthropic/claude-haiku-4-5-20251001"
     dirty: bool = False
 
     @property
